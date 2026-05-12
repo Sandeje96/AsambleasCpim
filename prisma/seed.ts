@@ -8,20 +8,19 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding: Asamblea 2026...");
 
-  const existe = await prisma.asamblea.findUnique({ where: { año: 2026 } });
+  const existe = await prisma.asamblea.findUnique({ where: { anio: 2026 } });
   if (existe) {
     console.log("Ya existe la asamblea 2026. Seed omitido.");
     return;
   }
 
-  // Fecha de asamblea: 29 de julio de 2026
   const fechaAsamblea = new Date(2026, 6, 29);
   const fechaCierre = new Date(2026, 3, 30);
   const feriados = await getFeriadosNacionales(2026);
 
   const asamblea = await prisma.asamblea.create({
     data: {
-      año: 2026,
+      anio: 2026,
       fechaCierreEjercicio: fechaCierre,
       fechaAsamblea,
       emailAlertas: null,
@@ -73,9 +72,8 @@ async function main() {
     ],
   });
 
-  console.log(`✅ Asamblea 2026 creada (id: ${asamblea.id}) con ${fechasCalc.length} fechas y ${CHECKLIST_ANTES.length + CHECKLIST_DESPUES.length} ítems de checklist.`);
+  console.log(`✅ Asamblea 2026 creada (id: ${asamblea.id}) con ${fechasCalc.length} fechas y ${CHECKLIST_ANTES.length + CHECKLIST_DESPUES.length} ítems.`);
 
-  // Mostrar tabla de fechas
   console.log("\n📅 Fechas calculadas para Asamblea 29/07/2026:");
   console.log("─".repeat(80));
   for (const f of fechasCalc) {

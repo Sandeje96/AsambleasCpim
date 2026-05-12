@@ -21,7 +21,7 @@ interface ChecklistItem {
 
 interface Asamblea {
   id: number;
-  año: number;
+  anio: number;
   fechaAsamblea: string;
   checklistItems: ChecklistItem[];
 }
@@ -105,7 +105,7 @@ export default function ChecklistPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Checklist de Documentos — {asamblea.año}
+            Checklist de Documentos — {asamblea.anio}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             Disposición N°25 Art. 6 de Personería Jurídica de Misiones

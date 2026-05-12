@@ -57,7 +57,7 @@ export async function POST(request: Request) {
 
     await enviarAlertaDeadlines({
       to: destinatario,
-      asambleaAño: asamblea.año,
+      asambleaAño: asamblea.anio,
       items,
     });
 

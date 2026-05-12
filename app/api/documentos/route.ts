@@ -3,7 +3,6 @@ import { prisma } from "@/lib/db";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 
-// POST /api/documentos — subir un archivo PDF/documento
 export async function POST(request: Request) {
   try {
     const formData = await request.formData();
@@ -19,12 +18,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Límite de 10 MB
     if (archivo.size > 10 * 1024 * 1024) {
       return NextResponse.json({ error: "El archivo supera los 10 MB" }, { status: 400 });
     }
 
-    // Directorio de uploads
     const uploadDir =
       process.env.UPLOAD_DIR
         ? path.resolve(process.env.UPLOAD_DIR, asambleaId)
@@ -32,18 +29,15 @@ export async function POST(request: Request) {
 
     await mkdir(uploadDir, { recursive: true });
 
-    // Nombre único para evitar colisiones
     const ext = path.extname(archivo.name);
     const baseName = path.basename(archivo.name, ext).replace(/[^a-zA-Z0-9_-]/g, "_");
     const uniqueName = `${Date.now()}_${baseName}${ext}`;
     const rutaAbsoluta = path.join(uploadDir, uniqueName);
     const rutaRelativa = path.join(asambleaId, uniqueName);
 
-    // Guardar en disco
     const buffer = Buffer.from(await archivo.arrayBuffer());
     await writeFile(rutaAbsoluta, buffer);
 
-    // Registrar en base de datos
     const doc = await prisma.documento.create({
       data: {
         asambleaId: Number(asambleaId),
@@ -52,7 +46,7 @@ export async function POST(request: Request) {
         nombreOriginal: archivo.name,
         rutaArchivo: rutaRelativa,
         mimeType: archivo.type,
-        tamaño: archivo.size,
+        tamano: archivo.size,
       },
     });
 

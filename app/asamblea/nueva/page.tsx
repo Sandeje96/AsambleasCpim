@@ -9,20 +9,18 @@ export default function NuevaAsambleaPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Valores por defecto: Asamblea 2026 = 29 de julio (mismo patrón que 2025)
   const hoy = new Date();
-  const añoActual = hoy.getFullYear();
-  const fechaPropuesta = new Date(añoActual, 6, 29); // 29 julio
+  const anioActual = hoy.getFullYear();
+  const fechaPropuesta = new Date(anioActual, 6, 29);
 
   const [form, setForm] = useState({
-    año: String(añoActual),
+    anio: String(anioActual),
     fechaAsamblea: format(fechaPropuesta, "yyyy-MM-dd"),
     emailAlertas: "",
     notas: "",
   });
 
-  // Calcular fecha límite legal: 60 días de corrido desde el cierre (30 abril)
-  const cierreEjercicio = new Date(Number(form.año), 3, 30);
+  const cierreEjercicio = new Date(Number(form.anio), 3, 30);
   const limiteLegal = addDays(cierreEjercicio, 60);
   const fechaAsambleaSeleccionada = new Date(form.fechaAsamblea + "T00:00:00");
   const superaLimite = fechaAsambleaSeleccionada > limiteLegal;
@@ -36,7 +34,7 @@ export default function NuevaAsambleaPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          año: Number(form.año),
+          anio: Number(form.anio),
           fechaAsamblea: form.fechaAsamblea,
           emailAlertas: form.emailAlertas || null,
           notas: form.notas || null,
@@ -68,21 +66,21 @@ export default function NuevaAsambleaPage() {
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
         {/* Año */}
         <div>
-          <label className="label" htmlFor="año">
+          <label className="label" htmlFor="anio">
             Año de la Asamblea
           </label>
           <input
-            id="año"
+            id="anio"
             type="number"
             min="2024"
             max="2040"
             className="input"
-            value={form.año}
-            onChange={(e) => setForm((f) => ({ ...f, año: e.target.value }))}
+            value={form.anio}
+            onChange={(e) => setForm((f) => ({ ...f, anio: e.target.value }))}
             required
           />
           <p className="text-xs text-gray-500 mt-1">
-            Ejercicio cerrado el 30/04/{form.año} (Ley I-N°11 Art. 32)
+            Ejercicio cerrado el 30/04/{form.anio} (Ley I-N°11 Art. 32)
           </p>
         </div>
 
@@ -96,12 +94,11 @@ export default function NuevaAsambleaPage() {
             type="date"
             className="input"
             value={form.fechaAsamblea}
-            min={`${form.año}-05-01`}
-            max={`${form.año}-12-31`}
+            min={`${form.anio}-05-01`}
+            max={`${form.anio}-12-31`}
             onChange={(e) => setForm((f) => ({ ...f, fechaAsamblea: e.target.value }))}
             required
           />
-          {/* Advertencia si supera el límite legal */}
           {superaLimite && (
             <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
               <p className="text-xs text-amber-800">
@@ -156,7 +153,6 @@ export default function NuevaAsambleaPage() {
           </div>
         )}
 
-        {/* Resumen de lo que se va a calcular */}
         <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm font-medium text-blue-800 mb-2">
             El sistema calculará automáticamente:

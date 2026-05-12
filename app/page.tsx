@@ -14,7 +14,7 @@ function getEstadoBadge(diasRestantes: number, completado: boolean) {
 
 export default async function DashboardPage() {
   const asambleas = await prisma.asamblea.findMany({
-    orderBy: { año: "desc" },
+    orderBy: { anio: "desc" },
     include: {
       fechasLegales: {
         orderBy: { orden: "asc" },
@@ -85,7 +85,7 @@ export default async function DashboardPage() {
                 <div className="bg-cpim-blue px-6 py-4 flex items-center justify-between">
                   <div>
                     <h2 className="text-white font-bold text-lg">
-                      Asamblea Ordinaria {asamblea.año}
+                      Asamblea Ordinaria {asamblea.anio}
                     </h2>
                     <p className="text-blue-200 text-sm">
                       {format(fechaAsamblea, "EEEE d 'de' MMMM 'de' yyyy", { locale: es })}

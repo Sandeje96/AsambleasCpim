@@ -17,7 +17,7 @@ interface Documento {
 
 interface Asamblea {
   id: number;
-  año: number;
+  anio: number;
   documentos: Documento[];
 }
 
@@ -93,7 +93,7 @@ export default function DocumentosPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Archivos PDF — {asamblea.año}
+            Archivos PDF — {asamblea.anio}
           </h1>
           <p className="text-gray-500 text-sm mt-1">
             Repositorio central de documentos de la asamblea
@@ -186,7 +186,7 @@ export default function DocumentosPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-800 truncate">{doc.nombre}</p>
                   <p className="text-xs text-gray-400">
-                    {doc.nombreOriginal} · {formatBytes(doc.tamaño ?? 0)} ·{" "}
+                    {doc.nombreOriginal} · {formatBytes(doc.tamano ?? 0)} ·{" "}
                     {format(new Date(doc.subidoAt), "dd/MM/yyyy HH:mm")}
                   </p>
                 </div>
@@ -224,7 +224,7 @@ export default function DocumentosPage() {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-800 truncate">{doc.nombre}</p>
                   <p className="text-xs text-gray-400">
-                    {doc.nombreOriginal} · {formatBytes(doc.tamaño ?? 0)} ·{" "}
+                    {doc.nombreOriginal} · {formatBytes(doc.tamano ?? 0)} ·{" "}
                     {format(new Date(doc.subidoAt), "dd/MM/yyyy HH:mm")}
                   </p>
                 </div>

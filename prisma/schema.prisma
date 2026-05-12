@@ -9,7 +9,7 @@ datasource db {
 
 model Asamblea {
   id                   Int      @id @default(autoincrement())
-  año                  Int      @unique
+  anio                 Int      @unique
   fechaCierreEjercicio DateTime @db.Date
   fechaAsamblea        DateTime @db.Date
   emailAlertas         String?
@@ -77,7 +77,7 @@ model Documento {
   nombreOriginal  String
   rutaArchivo     String
   mimeType        String?
-  tamaño          Int?
+  tamano          Int?
   subidoAt        DateTime @default(now())
 
   asamblea      Asamblea       @relation(fields: [asambleaId], references: [id], onDelete: Cascade)
@@ -104,8 +104,8 @@ model Feriado {
   id     Int      @id @default(autoincrement())
   fecha  DateTime @db.Date @unique
   nombre String
-  año    Int
+  anio   Int
 
-  @@index([año])
+  @@index([anio])
   @@map("feriados")
 }

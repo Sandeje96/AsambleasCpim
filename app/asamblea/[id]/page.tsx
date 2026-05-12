@@ -28,7 +28,7 @@ interface FechaLegal {
 
 interface Asamblea {
   id: number;
-  año: number;
+  anio: number;
   fechaCierreEjercicio: string;
   fechaAsamblea: string;
   emailAlertas: string | null;
@@ -159,7 +159,7 @@ export default function AsambleaPage() {
         <div className="bg-cpim-blue px-6 py-5 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-white text-xl font-bold">
-              Asamblea Ordinaria {asamblea.año}
+              Asamblea Ordinaria {asamblea.anio}
             </h1>
             <p className="text-blue-200 text-sm mt-1">
               {format(fechaAsamblea, "EEEE d 'de' MMMM 'de' yyyy", { locale: es })}
