@@ -2,7 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { format, addDays } from "date-fns";
+import { format, addDays, isWeekend, isTuesday } from "date-fns";
+
+// Suma N días hábiles (lunes-viernes, sin feriados).
+// Sin lista de feriados: cálculo aproximado, válido para mostrar referencia en UI.
+function sumarDiasHabilesAprox(fecha: Date, dias: number): Date {
+  let resultado = new Date(fecha);
+  let contados = 0;
+  while (contados < dias) {
+    resultado = addDays(resultado, 1);
+    if (!isWeekend(resultado)) contados++;
+  }
+  return resultado;
+}
 
 export default function NuevaAsambleaPage() {
   const router = useRouter();
@@ -11,7 +23,7 @@ export default function NuevaAsambleaPage() {
 
   const hoy = new Date();
   const anioActual = hoy.getFullYear();
-  const fechaPropuesta = new Date(anioActual, 6, 29);
+  const fechaPropuesta = new Date(anioActual, 6, 29); // 29 julio como punto de partida
 
   const [form, setForm] = useState({
     anio: String(anioActual),
@@ -20,13 +32,20 @@ export default function NuevaAsambleaPage() {
     notas: "",
   });
 
+  // Límite legal: 60 días HÁBILES desde el cierre del ejercicio (30 de abril)
   const cierreEjercicio = new Date(Number(form.anio), 3, 30);
-  const limiteLegal = addDays(cierreEjercicio, 60);
-  const fechaAsambleaSeleccionada = new Date(form.fechaAsamblea + "T00:00:00");
-  const superaLimite = fechaAsambleaSeleccionada > limiteLegal;
+  const limiteLegalHabiles = sumarDiasHabilesAprox(cierreEjercicio, 60);
+
+  const fechaAsambleaDate = new Date(form.fechaAsamblea + "T00:00:00");
+  const superaLimite = fechaAsambleaDate > limiteLegalHabiles;
+  const noEsMartes = form.fechaAsamblea !== "" && !isTuesday(fechaAsambleaDate);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (noEsMartes) {
+      setError("La fecha de asamblea debe ser un MARTES (día de sesión de la Comisión Directiva).");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -66,9 +85,7 @@ export default function NuevaAsambleaPage() {
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
         {/* Año */}
         <div>
-          <label className="label" htmlFor="anio">
-            Año de la Asamblea
-          </label>
+          <label className="label" htmlFor="anio">Año de la Asamblea</label>
           <input
             id="anio"
             type="number"
@@ -80,45 +97,61 @@ export default function NuevaAsambleaPage() {
             required
           />
           <p className="text-xs text-gray-500 mt-1">
-            Ejercicio cerrado el 30/04/{form.anio} (Ley I-N°11 Art. 32)
+            Ejercicio cerrado el 30/04/{form.anio} · Límite legal (aprox.):{" "}
+            <strong>{format(limiteLegalHabiles, "dd/MM/yyyy")}</strong>{" "}
+            <span className="text-gray-400">(60 días hábiles desde el cierre, sin contar feriados)</span>
           </p>
         </div>
 
         {/* Fecha de asamblea */}
         <div>
           <label className="label" htmlFor="fecha">
-            Fecha de la Asamblea
+            Fecha de la Asamblea{" "}
+            <span className="text-red-600 font-semibold">— debe ser MARTES</span>
           </label>
           <input
             id="fecha"
             type="date"
-            className="input"
+            className={`input ${noEsMartes ? "border-red-400 bg-red-50" : ""}`}
             value={form.fechaAsamblea}
             min={`${form.anio}-05-01`}
             max={`${form.anio}-12-31`}
             onChange={(e) => setForm((f) => ({ ...f, fechaAsamblea: e.target.value }))}
             required
           />
-          {superaLimite && (
-            <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-xs text-amber-800">
-                <strong>⚠️ Atención:</strong> La fecha de asamblea supera los 60 días corridos
-                desde el cierre del ejercicio ({format(limiteLegal, "dd/MM/yyyy")} según
-                Art. 32). Verificá la interpretación legal aplicable.
+
+          {/* Error: no es martes */}
+          {noEsMartes && (
+            <div className="mt-2 p-3 bg-red-50 border border-red-300 rounded-lg">
+              <p className="text-xs text-red-700 font-semibold">
+                ✗ La fecha seleccionada no es martes. La asamblea debe realizarse el día que
+                sesiona la Comisión Directiva (Ley I-N°11 Art. 32).
               </p>
             </div>
           )}
-          <p className="text-xs text-gray-500 mt-1">
-            Límite legal de referencia (60 días desde cierre):{" "}
-            <strong>{format(limiteLegal, "dd/MM/yyyy")}</strong>
-          </p>
+
+          {/* Advertencia: supera el límite de 60 días hábiles */}
+          {!noEsMartes && superaLimite && (
+            <div className="mt-2 p-3 bg-amber-50 border border-amber-300 rounded-lg">
+              <p className="text-xs text-amber-800">
+                <strong>⚠️ Atención:</strong> La fecha supera los 60 días hábiles desde el
+                cierre del ejercicio ({format(limiteLegalHabiles, "dd/MM/yyyy")} aprox., sin contar
+                feriados). Verificá con Personería Jurídica antes de confirmar esta fecha.
+              </p>
+            </div>
+          )}
+
+          {/* OK: es martes y dentro del límite */}
+          {!noEsMartes && !superaLimite && form.fechaAsamblea && (
+            <p className="text-xs text-green-600 mt-1 font-medium">
+              ✓ Martes · dentro del plazo legal
+            </p>
+          )}
         </div>
 
         {/* Email alertas */}
         <div>
-          <label className="label" htmlFor="email">
-            Email para Alertas y Recordatorios
-          </label>
+          <label className="label" htmlFor="email">Email para Alertas y Recordatorios</label>
           <input
             id="email"
             type="email"
@@ -134,14 +167,12 @@ export default function NuevaAsambleaPage() {
 
         {/* Notas */}
         <div>
-          <label className="label" htmlFor="notas">
-            Notas adicionales (opcional)
-          </label>
+          <label className="label" htmlFor="notas">Notas adicionales (opcional)</label>
           <textarea
             id="notas"
             rows={3}
             className="input resize-none"
-            placeholder="Ej: Elección de presidente, tesorero y 2 vocales..."
+            placeholder="Ej: Renovación de presidente, tesorero y 2 vocales..."
             value={form.notas}
             onChange={(e) => setForm((f) => ({ ...f, notas: e.target.value }))}
           />
@@ -153,32 +184,29 @@ export default function NuevaAsambleaPage() {
           </div>
         )}
 
-        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm font-medium text-blue-800 mb-2">
-            El sistema calculará automáticamente:
-          </p>
-          <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
-            <li>Fecha de confección del Padrón (45 días antes)</li>
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700 space-y-1">
+          <p className="font-semibold text-blue-800">El sistema calculará automáticamente:</p>
+          <ul className="list-disc list-inside space-y-0.5">
+            <li>Padrón de matriculados (45 días corridos antes)</li>
             <li>Período de observaciones al Padrón (15 días)</li>
-            <li>Convocatoria en orden del día de la CD (último martes ≥ 20 días antes)</li>
-            <li>Presentación en Personería Jurídica antes (15 días hábiles)</li>
-            <li>Publicación de edictos en el Boletín Oficial (2 días, con ≥ 15 días de anticipación)</li>
-            <li>Presentación de listas de candidatos (10 días antes)</li>
-            <li>Conformación de la Junta Electoral</li>
-            <li>Presentación en Personería Jurídica después (15 días hábiles post-asamblea)</li>
-            <li>Checklist completo de documentos pre y post asamblea</li>
+            <li>Convocatoria en CD — último martes con ≥ 20 días de anticipación</li>
+            <li>Presentación Personería antes — 15 días <strong>hábiles</strong> (sin sábados, domingos ni feriados)</li>
+            <li>Publicación de edictos — 2 días en el Boletín Oficial con ≥ 15 días corridos de anticipación</li>
+            <li>Presentación de listas (10 días corridos antes)</li>
+            <li>Junta Electoral — día siguiente al cierre de listas, evitando martes</li>
+            <li>Presentación Personería después — 15 días <strong>hábiles</strong> post-asamblea</li>
           </ul>
         </div>
 
         <div className="flex gap-3">
-          <button type="submit" className="btn-primary flex-1 justify-center" disabled={loading}>
+          <button
+            type="submit"
+            className="btn-primary flex-1 justify-center"
+            disabled={loading || noEsMartes}
+          >
             {loading ? "Calculando fechas..." : "Crear Asamblea y Calcular Fechas"}
           </button>
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={() => router.push("/")}
-          >
+          <button type="button" className="btn-secondary" onClick={() => router.push("/")}>
             Cancelar
           </button>
         </div>
