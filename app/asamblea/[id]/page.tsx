@@ -6,6 +6,7 @@ import Link from "next/link";
 import { format, differenceInCalendarDays } from "date-fns";
 import { es } from "date-fns/locale";
 import { COLOR_CLASSES } from "@/lib/constants";
+import { parseDate } from "@/lib/dateUtils";
 
 interface FechaLegal {
   id: number;
@@ -143,7 +144,7 @@ export default function AsambleaPage() {
   if (!asamblea) return null;
 
   const hoy = new Date();
-  const fechaAsamblea = new Date(asamblea.fechaAsamblea);
+  const fechaAsamblea = parseDate(asamblea.fechaAsamblea);
   const diasParaAsamblea = differenceInCalendarDays(fechaAsamblea, hoy);
 
   const etapas = [
@@ -228,8 +229,8 @@ export default function AsambleaPage() {
             </h2>
             <div className="space-y-3">
               {fechas.map((fecha) => {
-                const diasPlan = differenceInCalendarDays(new Date(fecha.fechaPlanificada), hoy);
-                const diasEstricta = differenceInCalendarDays(new Date(fecha.fechaEstricta), hoy);
+                const diasPlan = differenceInCalendarDays(parseDate(fecha.fechaPlanificada), hoy);
+                const diasEstricta = differenceInCalendarDays(parseDate(fecha.fechaEstricta), hoy);
                 const urgencia = getUrgencia(diasPlan, diasEstricta, fecha.completado);
                 const colors = COLOR_CLASSES[fecha.colorClase] ?? COLOR_CLASSES.blue;
                 const estaExpandido = expandedId === fecha.id;
@@ -276,20 +277,20 @@ export default function AsambleaPage() {
                           <div>
                             <p className="text-xs text-gray-400">Fecha planificada</p>
                             <p className="text-sm font-medium text-gray-700">
-                              {format(new Date(fecha.fechaPlanificada), "dd/MM/yyyy")}
+                              {format(parseDate(fecha.fechaPlanificada), "dd/MM/yyyy")}
                             </p>
                           </div>
                           <div>
                             <p className="text-xs text-gray-400">Fecha límite legal</p>
                             <p className="text-sm font-medium text-gray-700">
-                              {format(new Date(fecha.fechaEstricta), "dd/MM/yyyy")}
+                              {format(parseDate(fecha.fechaEstricta), "dd/MM/yyyy")}
                             </p>
                           </div>
                           {fecha.completado && fecha.fechaCompletado && (
                             <div>
                               <p className="text-xs text-gray-400">Completado el</p>
                               <p className="text-sm font-medium text-green-600">
-                                {format(new Date(fecha.fechaCompletado), "dd/MM/yyyy")}
+                                {format(parseDate(fecha.fechaCompletado!), "dd/MM/yyyy")}
                               </p>
                             </div>
                           )}
