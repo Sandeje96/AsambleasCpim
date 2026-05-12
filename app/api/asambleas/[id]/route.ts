@@ -12,7 +12,10 @@ export async function GET(
       where: { id: Number(id) },
       include: {
         fechasLegales: { orderBy: { orden: "asc" } },
-        checklistItems: { orderBy: [{ etapa: "asc" }, { orden: "asc" }] },
+        checklistItems: {
+          orderBy: [{ etapa: "asc" }, { orden: "asc" }],
+          include: { documentos: { orderBy: { subidoAt: "desc" } } },
+        },
         documentos: { orderBy: { subidoAt: "desc" } },
         alertas: { orderBy: { fechaEnvio: "asc" } },
       },
