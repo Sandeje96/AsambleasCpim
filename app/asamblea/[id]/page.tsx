@@ -76,6 +76,7 @@ export default function AsambleaPage() {
   const [emailMsg, setEmailMsg] = useState("");
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [editNota, setEditNota] = useState<{ id: number; texto: string } | null>(null);
+  const [editFecha, setEditFecha] = useState<{ id: number; valor: string } | null>(null);
 
   const cargar = useCallback(async () => {
     const res = await fetch(`/api/asambleas/${id}`);
@@ -93,6 +94,16 @@ export default function AsambleaPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ completado: !actual }),
     });
+    cargar();
+  }
+
+  async function guardarFechaPlanificada(fechaId: number, nuevaFecha: string) {
+    await fetch(`/api/fechas/${fechaId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fechaPlanificada: nuevaFecha }),
+    });
+    setEditFecha(null);
     cargar();
   }
 
@@ -315,6 +326,46 @@ export default function AsambleaPage() {
                         <p className="text-sm text-gray-700 mt-3 leading-relaxed">
                           {fecha.descripcion}
                         </p>
+
+                        {/* Editar fecha planificada */}
+                        <div className="mt-3">
+                          {editFecha?.id === fecha.id ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="date"
+                                className="input text-xs py-1"
+                                value={editFecha.valor}
+                                onChange={(e) =>
+                                  setEditFecha({ id: fecha.id, valor: e.target.value })
+                                }
+                              />
+                              <button
+                                onClick={() => guardarFechaPlanificada(fecha.id, editFecha.valor)}
+                                className="btn-primary text-xs px-3 py-1"
+                              >
+                                Guardar
+                              </button>
+                              <button
+                                onClick={() => setEditFecha(null)}
+                                className="btn-secondary text-xs px-3 py-1"
+                              >
+                                Cancelar
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                setEditFecha({
+                                  id: fecha.id,
+                                  valor: fecha.fechaPlanificada.split("T")[0],
+                                })
+                              }
+                              className="text-xs text-blue-600 hover:text-blue-800 underline"
+                            >
+                              ✏️ Cambiar fecha planificada
+                            </button>
+                          )}
+                        </div>
 
                         {/* Notas */}
                         <div className="mt-3">
