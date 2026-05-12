@@ -10,7 +10,7 @@ interface Documento {
   nombre: string;
   nombreOriginal: string;
   mimeType: string;
-  tamaño: number;
+  tamano: number;
   subidoAt: string;
   checklistItemId: number | null;
 }
