@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Asamblea {
+  id                   Int      @id @default(autoincrement())
+  año                  Int      @unique
+  fechaCierreEjercicio DateTime @db.Date
+  fechaAsamblea        DateTime @db.Date
+  emailAlertas         String?
+  estado               String   @default("EN_PROCESO")
+  notas                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  fechasLegales  FechaLegal[]
+  checklistItems ChecklistItem[]
+  documentos     Documento[]
+  alertas        Alerta[]
+
+  @@map("asambleas")
+}
+
+model FechaLegal {
+  id               Int       @id @default(autoincrement())
+  asambleaId       Int
+  codigo           String
+  nombre           String
+  descripcion      String?
+  referencia       String?
+  tipo             String
+  etapa            String
+  fechaEstricta    DateTime  @db.Date
+  fechaPlanificada DateTime  @db.Date
+  unidad           String    @default("CORRIDOS")
+  diasBase         Int       @default(0)
+  colorClase       String    @default("blue")
+  orden            Int       @default(0)
+  completado       Boolean   @default(false)
+  fechaCompletado  DateTime?
+  notas            String?
+
+  asamblea Asamblea @relation(fields: [asambleaId], references: [id], onDelete: Cascade)
+
+  @@map("fechas_legales")
+}
+
+model ChecklistItem {
+  id              Int       @id @default(autoincrement())
+  asambleaId      Int
+  etapa           String
+  orden           Int
+  codigo          String
+  nombre          String
+  descripcion     String?
+  referencia      String?
+  completado      Boolean   @default(false)
+  fechaCompletado DateTime?
+  notas           String?
+
+  asamblea   Asamblea    @relation(fields: [asambleaId], references: [id], onDelete: Cascade)
+  documentos Documento[]
+
+  @@map("checklist_items")
+}
+
+model Documento {
+  id              Int      @id @default(autoincrement())
+  asambleaId      Int
+  checklistItemId Int?
+  nombre          String
+  nombreOriginal  String
+  rutaArchivo     String
+  mimeType        String?
+  tamaño          Int?
+  subidoAt        DateTime @default(now())
+
+  asamblea      Asamblea       @relation(fields: [asambleaId], references: [id], onDelete: Cascade)
+  checklistItem ChecklistItem? @relation(fields: [checklistItemId], references: [id])
+
+  @@map("documentos")
+}
+
+model Alerta {
+  id         Int      @id @default(autoincrement())
+  asambleaId Int
+  tipo       String
+  mensaje    String
+  fechaEnvio DateTime
+  enviada    Boolean  @default(false)
+  email      String
+
+  asamblea Asamblea @relation(fields: [asambleaId], references: [id], onDelete: Cascade)
+
+  @@map("alertas")
+}
+
+model Feriado {
+  id     Int      @id @default(autoincrement())
+  fecha  DateTime @db.Date @unique
+  nombre String
+  año    Int
+
+  @@index([año])
+  @@map("feriados")
+}
